@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Ultimate SaaS Startup Software</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6f9;
+}
+
+/* LOGIN */
+
+.loginPage{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(45deg,#0072ff,#00c6ff);
+}
+
+.loginBox{
+background:white;
+padding:40px;
+text-align:center;
+box-shadow:0 0 10px gray;
+}
+
+input{
+padding:10px;
+margin:8px;
+width:220px;
+}
+
+button{
+padding:10px 20px;
+background:#007bff;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+/* DASHBOARD */
+
+.dashboard{
+display:none;
+}
+
+.sidebar{
+width:230px;
+height:100vh;
+background:#2c3e50;
+color:white;
+position:fixed;
+}
+
+.sidebar h2{
+text-align:center;
+padding:20px;
+}
+
+.sidebar ul{
+list-style:none;
+padding:0;
+}
+
+.sidebar li{
+padding:15px;
+cursor:pointer;
+}
+
+.sidebar li:hover{
+background:#34495e;
+}
+
+.main{
+margin-left:230px;
+padding:30px;
+}
+
+/* CARD */
+
+.card{
+background:white;
+padding:20px;
+margin:10px;
+display:inline-block;
+width:200px;
+box-shadow:0 0 10px gray;
+}
+
+/* PANEL */
+
+.panel{
+background:white;
+padding:20px;
+margin:20px;
+width:500px;
+box-shadow:0 0 10px gray;
+}
+
+/* PROGRESS */
+
+.bar{
+width:100%;
+background:#ddd;
+height:20px;
+}
+
+.progress{
+height:20px;
+background:green;
+width:0%;
+}
+
+/* DARK MODE */
+
+.dark{
+background:#111;
+color:white;
+}
+
+.dark .card{
+background:#333;
+}
+
+.dark .panel{
+background:#333;
+}
+
+/* NOTICE */
+
+.notice{
+position:fixed;
+top:20px;
+right:20px;
+background:green;
+color:white;
+padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+
+<div class="loginPage" id="loginPage">
+
+<div class="loginBox">
+
+<h2>SaaS Startup Software </h2>
+<h2>Login</h2>
+
+<input type="text" id="user" placeholder="Username"><br> <input type="password" id="pass" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
+<h3>Register</h3>
+
+<input type="text" id="regUser" placeholder="New Username"><br> <input type="password" id="regPass" placeholder="New Password"><br>
+
+<button onclick="register()">Register</button>
+
+</div>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div class="dashboard" id="dashboard">
+
+<div class="sidebar">
+
+<h2>SaaS Startup</h2>
+
+<ul>
+<li onclick="showSection('home')">Dashboard</li>
+<li onclick="showSection('users')">Users</li>
+<li onclick="showSection('projects')">Projects</li>
+<li onclick="showSection('tasks')">Tasks</li>
+<li onclick="showSection('files')">Files</li>
+<li onclick="darkMode()">Dark Mode</li>
+<li onclick="logout()">Logout</li>
+</ul>
+
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+
+<div id="home">
+
+<h1>Dashboard</h1>
+
+<div class="card">
+<h3>Total Users</h3>
+<p id="userCount">0</p>
+</div>
+
+<div class="card">
+<h3>Total Projects</h3>
+<p id="projectCount">0</p>
+</div>
+
+<div class="card">
+<h3>Total Tasks</h3>
+<p id="taskCount">0</p>
+</div>
+
+<div class="panel">
+
+<h3>Project Progress</h3>
+
+<div class="bar">
+<div class="progress"></div>
+</div>
+
+</div>
+
+<button onclick="backup()">Download Backup</button>
+
+<input type="file" onchange="restore(event)">
+
+</div>
+
+<!-- USERS -->
+
+<div id="users" style="display:none">
+
+<div class="panel">
+
+<h3>User Management</h3>
+
+<input type="text" id="newUser" placeholder="Add user">
+
+<button onclick="addUser()">Add</button>
+
+<ul id="userList"></ul>
+
+</div>
+
+</div>
+
+<!-- PROJECTS -->
+
+<div id="projects" style="display:none">
+
+<div class="panel">
+
+<h3>Projects</h3>
+
+<input type="text" id="newProject" placeholder="Add project">
+
+<button onclick="addProject()">Add</button>
+
+<br><br>
+
+<input type="text" id="searchProject" placeholder="Search project" onkeyup="searchProject()">
+
+<ul id="projectList"></ul>
+
+</div>
+
+</div>
+
+<!-- TASKS -->
+
+<div id="tasks" style="display:none">
+
+<div class="panel">
+
+<h3>Tasks</h3>
+
+<input type="text" id="newTask" placeholder="Add task">
+
+<button onclick="addTask()">Add</button>
+
+<ul id="taskList"></ul>
+
+</div>
+
+</div>
+
+<!-- FILES -->
+
+<div id="files" style="display:none">
+
+<div class="panel">
+
+<h3>File Upload</h3>
+
+<input type="file" onchange="uploadFile(event)">
+
+<div id="filePreview"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let users=JSON.parse(localStorage.getItem("users"))||[]
+let projects=JSON.parse(localStorage.getItem("projects"))||[]
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[]
+let accounts=JSON.parse(localStorage.getItem("accounts"))||[]
+
+updateUsers()
+updateProjects()
+updateTasks()
+
+function notify(msg){
+
+let n=document.createElement("div")
+n.className="notice"
+n.innerText=msg
+
+document.body.appendChild(n)
+
+setTimeout(()=>n.remove(),3000)
+
+}
+
+/* LOGIN */
+
+function login(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+let ok=false
+
+accounts.forEach(a=>{
+if(a.user==u && a.pass==p){
+ok=true
+}
+})
+
+if(u=="admin" && p=="1234") ok=true
+
+if(ok){
+
+document.getElementById("loginPage").style.display="none"
+document.getElementById("dashboard").style.display="block"
+
+notify("Login Success")
+
+}else{
+
+alert("Wrong Login")
+
+}
+
+}
+
+/* REGISTER */
+
+function register(){
+
+let u=document.getElementById("regUser").value
+let p=document.getElementById("regPass").value
+
+accounts.push({user:u,pass:p})
+
+localStorage.setItem("accounts",JSON.stringify(accounts))
+
+alert("Account Created")
+
+}
+
+/* LOGOUT */
+
+function logout(){
+location.reload()
+}
+
+/* DARK MODE */
+
+function darkMode(){
+document.body.classList.toggle("dark")
+}
+
+/* SECTION */
+
+function showSection(s){
+
+["home","users","projects","tasks","files"].forEach(id=>{
+document.getElementById(id).style.display="none"
+})
+
+document.getElementById(s).style.display="block"
+
+}
+
+/* USERS */
+
+function addUser(){
+
+let name=document.getElementById("newUser").value
+
+if(name=="") return
+
+users.push(name)
+
+localStorage.setItem("users",JSON.stringify(users))
+
+updateUsers()
+
+}
+
+function updateUsers(){
+
+let list=document.getElementById("userList")
+
+list.innerHTML=""
+
+users.forEach((u,i)=>{
+
+list.innerHTML+=`
+<li>${u}
+<button onclick="deleteUser(${i})">Delete</button>
+</li>
+`
+
+})
+
+document.getElementById("userCount").innerText=users.length
+
+}
+
+function deleteUser(i){
+
+users.splice(i,1)
+
+localStorage.setItem("users",JSON.stringify(users))
+
+updateUsers()
+
+}
+
+/* PROJECTS */
+
+function addProject(){
+
+let name=document.getElementById("newProject").value
+
+if(name=="") return
+
+projects.push(name)
+
+localStorage.setItem("projects",JSON.stringify(projects))
+
+updateProjects()
+
+}
+
+function updateProjects(){
+
+let list=document.getElementById("projectList")
+
+list.innerHTML=""
+
+projects.forEach((p,i)=>{
+
+list.innerHTML+=`
+<li>${p}
+<button onclick="deleteProject(${i})">Delete</button>
+</li>
+`
+
+})
+
+document.getElementById("projectCount").innerText=projects.length
+
+}
+
+function deleteProject(i){
+
+projects.splice(i,1)
+
+localStorage.setItem("projects",JSON.stringify(projects))
+
+updateProjects()
+
+}
+
+function searchProject(){
+
+let input=document.getElementById("searchProject").value.toLowerCase()
+
+let items=document.querySelectorAll("#projectList li")
+
+items.forEach(item=>{
+
+if(item.innerText.toLowerCase().includes(input)){
+item.style.display="block"
+}else{
+item.style.display="none"
+}
+
+})
+
+}
+
+/* TASKS */
+
+function addTask(){
+
+let name=document.getElementById("newTask").value
+
+if(name=="") return
+
+tasks.push({name:name,done:false})
+
+localStorage.setItem("tasks",JSON.stringify(tasks))
+
+updateTasks()
+
+}
+
+function updateTasks(){
+
+let list=document.getElementById("taskList")
+
+list.innerHTML=""
+
+tasks.forEach((t,i)=>{
+
+list.innerHTML+=`
+<li>
+${t.name} - ${t.done ? "Completed":"Pending"}
+<button onclick="completeTask(${i})">Complete</button>
+<button onclick="deleteTask(${i})">Delete</button>
+</li>
+`
+
+})
+
+document.getElementById("taskCount").innerText=tasks.length
+
+updateProgress()
+
+}
+
+function completeTask(i){
+
+tasks[i].done=true
+
+localStorage.setItem("tasks",JSON.stringify(tasks))
+
+updateTasks()
+
+}
+
+function deleteTask(i){
+
+tasks.splice(i,1)
+
+localStorage.setItem("tasks",JSON.stringify(tasks))
+
+updateTasks()
+
+}
+
+/* PROGRESS */
+
+function updateProgress(){
+
+let percent=(tasks.length>0)?
+(tasks.filter(t=>t.done).length/tasks.length)*100:0
+
+document.querySelector(".progress").style.width=percent+"%"
+
+}
+
+/* FILE UPLOAD */
+
+function uploadFile(e){
+
+let file=e.target.files[0]
+
+document.getElementById("filePreview").innerText="Uploaded: "+file.name
+
+}
+
+/* BACKUP */
+
+function backup(){
+
+let data={users,projects,tasks}
+
+let blob=new Blob([JSON.stringify(data)],{type:"application/json"})
+
+let a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download="saas_backup.json"
+
+a.click()
+
+}
+
+/* RESTORE */
+
+function restore(e){
+
+let file=e.target.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+let data=JSON.parse(reader.result)
+
+users=data.users||[]
+projects=data.projects||[]
+tasks=data.tasks||[]
+
+localStorage.setItem("users",JSON.stringify(users))
+localStorage.setItem("projects",JSON.stringify(projects))
+localStorage.setItem("tasks",JSON.stringify(tasks))
+
+updateUsers()
+updateProjects()
+updateTasks()
+
+alert("Data Restored")
+
+}
+
+reader.readAsText(file)
+
+}
+
+</script>
+
+</body>
+</html>
